@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" >
+
+<head>
+	<meta charset="UTF-8">
+	<title>Basic Scientific Calculator</title>
+	
+	
+	<link rel='stylesheet prefetch' href='https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css'>
+
+	
+</head>
+
+<body>
+<style>
+</style>
+	
+<div class="container calc box-shadow " >
+	<br>
+	<br>
+	<div class="well display">
+		<div id="calculation">
+		</div>
+		<div id="result" class="text-right">
+		</div>
+	</div>
+	<div class="container-fluid numbersWell">
+
+
+		<button id="btnClearOne" class="col-xs-2 btn btn-default " style="background-color:gray;">Del</button>
+		<button id="btnClear" class=" col-xs-2 btn btn-default" style="background-color:gray;">Clear</button>
+		<button id="btnBracket1" class="col-xs-2 btn btn-default numbers">(</button>
+		<button id="btnBracket2" class=" col-xs-2 btn btn-default numbers">)</button>
+		<button id="btnPower" class=" col-xs-2 btn btn-default" style="background-color:red;">ON</button>
+
+		<button id="btnSin" class=" col-xs-3 btn btn-default trig">sin</button>
+		<button id="btnCos" class=" col-xs-3 btn btn-default trig">cos</button>
+		<button id="btnTan" class="col-xs-3 btn btn-default trig">tan</button>
+		<button id="btnDivide" class=" col-xs-3 btn btn-default numbers arithmetic">/</button>
+
+		<button id="btn7" class=" col-xs-3  btn btn-default numbers">7</button>
+		<button id="btn8" class="col-xs-3  btn btn-default numbers">8</button>
+		<button id="btn9" class="col-xs-3 btn btn-default numbers">9</button>
+		<button id="btnPlus" class="col-xs-3 btn btn-default numbers arithmetic">+</button>
+
+		<button id="btn4" class="col-xs-3 btn btn-default numbers">4</button>
+		<button id="btn5" class="col-xs-3 btn btn-default numbers">5</button>
+		<button id="btn6" class=" col-xs-3 btn btn-default numbers">6</button>
+		<button id="btnMinus" class=" col-xs-3 btn btn-default numbers arithmetic">-</button>
+
+		<button id="btn1" class="col-xs-3 btn btn-default numbers">1</button>
+		<button id="btn2" class="col-xs-3 btn btn-default numbers">2</button>
+		<button id="btn3" class="col-xs-3 btn btn-default numbers">3</button>
+		<button id="btnTimes" class="col-xs-3 btn btn-default numbers arithmetic">*</button>
+
+
+		<button id="btnPoint" class=" col-xs-3  btn btn-default numbers">.</button>
+		<button id="btn0" class=" col-xs-3 btn btn-default numbers">0</button>
+		<button id="btnEquals" class="col-xs-3  btn btn-default" style="background-color:orange;">=</button>
+
+		</li>
+	</div>
+</div>
+</div>
+<script src='https://code.jquery.com/jquery-3.5.1.min.js'></script>
+
+<script>
+	$(document).ready(function() {
+		var a = "";
+
+		function getText() {
+			return $("#calculation").html();
+		}
+
+		function displayResult(value) {
+			$("#result").html(value);
+		}
+
+		function displayCalc(val) {
+			var text = getText();
+			if (text == "Syntax Error") {
+				$("#calculation").html(val);
+			} else {
+				$("#calculation").html(text + val);
+			}
+		}
+		
+		function eval_expression(a){
+			$.ajax('/eval?expression='+btoa(a), 
+			{
+				timeout: 5000,
+				success: function (result,status,xhr) { 
+					if(status=="success"){
+						a = "";
+						$("#calculation").html("");
+						displayResult(result);
+					}else{
+						a = "";
+						displayResult("Error");
+					}
+				},
+				error: function (jqXhr, textStatus, errorMessage) {
+					a = "";
+					displayResult(errorMessage);
+				}
+			});
+		}
+		
+		var value = $("#btnPower").html();
+		var result = 0;
+		$("#btnPower").on("click", function() {
+
+			if (value === "ON") {
+				displayResult(0);
+				$("#btnPower").html("OFF");
+				value = "OFF";
+			} else {
+				$("#calculation").html("");
+				displayResult("");
+				$("#btnPower").html("ON");
+				value = "ON";
+			}
+		})
+
+		$(".numbers").each(function(index) {
+			$(this).on("click", function() {
+				if (value == "OFF") {
+					displayCalc($(this).text());
+					a += $(this).text();
+				}
+			});
+		});
+		$(".arithmetic").each(function(index) {
+			$(this).on("click", function() {
+				if (value == "OFF"&& $("#calculation").html() === "" && result !== 0) {
+					$("#calculation").html(result + $(this).text);
+				}
+			});
+		});
+
+		$(".trig").each(function(index) {
+
+			$(this).on("click", function() {
+				if (value == "OFF") {
+					displayCalc($(this).text() + "(");
+					a += $(this).text() + "(";
+				}
+			});
+			
+		});
+		$("#btnClear").on("click", function() {
+			if (value == "OFF") {
+				$("#calculation").html("");
+				a = "";
+				displayResult(0);
+			}
+		});
+		$("#btnEquals").on("click", function() {
+			eval_expression(a)
+		});
+
+		$("#btnClearOne").on("click", function() {
+			var calcText = getText();
+			var arr = calcText.split("");
+			var copyArr = arr.slice();
+			var checker = copyArr.splice(arr.length - 4, 4);
+			checker = checker.join("");
+
+			if (checker === "cos(" || checker === "sin(" || checker === "tan(") {
+				for (var j = 0; j < 4; j++) {
+					arr.pop();
+				}
+			} else {
+				arr.pop();
+			}
+			a = arr.join("");
+
+			$("#calculation").html(a);
+		});
+
+	});	
+</script>
+
+
+
+
+</body>
+
+</html>
